@@ -2,8 +2,6 @@
 
 Batch tool that takes meeting recordings, runs speaker diarization with pyannoteAI, cuts the audio by speaker timestamps, and exports grouped speaker packs like `speaker_00.wav`, `speaker_01.wav`, and a review manifest.
 
-This project does **not** try to identify real names. It only answers **who spoke when**, groups those chunks by generic speaker label, and leaves the human naming step for later.
-
 Given one or more files like:
 
 - `.mp4`

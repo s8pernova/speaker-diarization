@@ -6,15 +6,23 @@ from pathlib import Path
 from typing import Optional
 
 import torch
+from huggingface_hub.errors import GatedRepoError
 from pyannote.audio import Pipeline
 from pyannote.audio.pipelines.utils.hook import ProgressHook
 
 
 def build_pipeline(hf_token: str, use_gpu: bool = True) -> Pipeline:
-    pipeline = Pipeline.from_pretrained(
-        "pyannote/speaker-diarization-community-1",
-        token=hf_token,
-    )
+    try:
+        pipeline = Pipeline.from_pretrained(
+            "pyannote/speaker-diarization-community-1",
+            token=hf_token,
+        )
+    except GatedRepoError as exc:
+        raise RuntimeError(
+            "Cannot access `pyannote/speaker-diarization-community-1`. "
+            "Accept the model access request on Hugging Face and use a token "
+            "that has permission for that repo."
+        ) from exc
 
     if use_gpu and torch.cuda.is_available():
         pipeline.to(torch.device("cuda"))

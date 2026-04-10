@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import re
 from pathlib import Path
 from typing import Any, Optional, Sequence
@@ -20,6 +21,12 @@ except ImportError:
     from segmenter import group_segments_by_speaker
 
 SUPPORTED_INPUT_EXTENSIONS = {".m4a", ".mp3", ".mp4", ".wav"}
+
+
+def _load_run_diarization():
+    if __package__:
+        return importlib.import_module(".diarize", package=__package__).run_diarization
+    return importlib.import_module("diarize").run_diarization
 
 
 def _slugify(value: str) -> str:
@@ -106,11 +113,7 @@ def process_input_file(
     speakers_directory = run_directory / "speakers"
 
     extract_audio(input_path=input_path, output_path=extracted_audio_path)
-
-    try:
-        from .diarize import run_diarization
-    except ImportError:
-        from diarize import run_diarization
+    run_diarization = _load_run_diarization()
 
     diarized_segments, _ = run_diarization(
         audio_path=extracted_audio_path,

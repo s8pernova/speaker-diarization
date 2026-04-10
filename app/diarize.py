@@ -2,11 +2,20 @@
 
 from __future__ import annotations
 
+import warnings
+import wave
 from pathlib import Path
 from typing import Optional
 
 import torch
 from huggingface_hub.errors import GatedRepoError
+
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    module=r"pyannote\.audio\.core\.io",
+)
+
 from pyannote.audio import Pipeline
 from pyannote.audio.pipelines.utils.hook import ProgressHook
 
@@ -30,6 +39,29 @@ def build_pipeline(hf_token: str, use_gpu: bool = True) -> Pipeline:
     return pipeline
 
 
+def load_waveform(audio_path: str | Path) -> tuple[torch.Tensor, int]:
+    """Load the extracted mono PCM wav without relying on torchcodec."""
+    audio_path = Path(audio_path)
+
+    with wave.open(str(audio_path), "rb") as wav_file:
+        sample_rate = wav_file.getframerate()
+        sample_width = wav_file.getsampwidth()
+        num_channels = wav_file.getnchannels()
+        num_frames = wav_file.getnframes()
+        raw_frames = wav_file.readframes(num_frames)
+
+    if sample_width != 2:
+        raise RuntimeError(
+            f"Unsupported WAV sample width {sample_width} bytes in {audio_path}. "
+            "Expected 16-bit PCM audio."
+        )
+
+    waveform = torch.frombuffer(bytearray(raw_frames), dtype=torch.int16)
+    waveform = waveform.reshape(-1, num_channels).transpose(0, 1).to(torch.float32)
+    waveform = waveform / 32768.0
+    return waveform, sample_rate
+
+
 def run_diarization(
     audio_path: str | Path,
     hf_token: str,
@@ -40,6 +72,7 @@ def run_diarization(
     use_exclusive: bool = True,
 ):
     pipeline = build_pipeline(hf_token=hf_token, use_gpu=use_gpu)
+    waveform, sample_rate = load_waveform(audio_path)
 
     kwargs = {}
     if num_speakers is not None:
@@ -51,7 +84,15 @@ def run_diarization(
             kwargs["max_speakers"] = max_speakers
 
     with ProgressHook() as hook:
-        output = pipeline(str(audio_path), hook=hook, **kwargs)
+        output = pipeline(
+            {
+                "waveform": waveform,
+                "sample_rate": sample_rate,
+                "uri": Path(audio_path).stem,
+            },
+            hook=hook,
+            **kwargs,
+        )
 
     diarization = (
         output.exclusive_speaker_diarization

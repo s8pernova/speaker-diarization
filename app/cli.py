@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-import os
+from config import get_settings
 from pathlib import Path
 
 from diarize import run_diarization
@@ -18,7 +18,8 @@ def main() -> None:
     parser.add_argument("--cpu", action="store_true")
     args = parser.parse_args()
 
-    hf_token = os.environ["HUGGINGFACE_ACCESS_TOKEN"]
+    settings = get_settings()
+    hf_token = settings.HUGGINGFACE_ACCESS_TOKEN
 
     segments, _ = run_diarization(
         audio_path=Path(args.input),

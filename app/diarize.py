@@ -2,22 +2,21 @@
 
 from __future__ import annotations
 
-import warnings
 import wave
 from pathlib import Path
 from typing import Optional
 
 import torch
 from huggingface_hub.errors import GatedRepoError
-
-warnings.filterwarnings(
-    "ignore",
-    category=UserWarning,
-    module=r"pyannote\.audio\.core\.io",
-)
-
 from pyannote.audio import Pipeline
 from pyannote.audio.pipelines.utils.hook import ProgressHook
+
+
+def format_hms(total_seconds: float) -> str:
+    total_seconds = int(total_seconds)
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
 def build_pipeline(hf_token: str, use_gpu: bool = True) -> Pipeline:
@@ -105,9 +104,9 @@ def run_diarization(
         segments.append(
             {
                 "speaker": str(speaker),
-                "start": float(turn.start),
-                "end": float(turn.end),
-                "duration": float(turn.end - turn.start),
+                "start": format_hms(float(turn.start)),
+                "end": format_hms(float(turn.end)),
+                "duration_seconds": float(turn.end - turn.start),
             }
         )
 

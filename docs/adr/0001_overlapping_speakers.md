@@ -1,0 +1,1 @@
+WIP ADR for what will happen in case there are overlapping speakers and pyannote gets confused.

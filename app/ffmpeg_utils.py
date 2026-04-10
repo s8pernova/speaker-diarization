@@ -1,0 +1,1 @@
+"""Extracts audio and cuts clips"""

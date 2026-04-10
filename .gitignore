@@ -238,3 +238,5 @@ test*
 
 # Misc
 tmp/
+input/
+output/

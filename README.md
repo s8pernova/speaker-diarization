@@ -38,3 +38,17 @@ input media
   -> merge per speaker
   -> export packs + manifest
 ```
+
+## Example CLI
+
+Process everything in `input/` and write results to `output/`:
+
+```bash
+python app/cli.py --input input/
+```
+
+You can also point at specific files:
+
+```bash
+python app/cli.py --input input/4-7-26-sb-meeting.mp4
+```

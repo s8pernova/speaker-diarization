@@ -1,11 +1,7 @@
 """Orchestator"""
 
-import argparse
-
 def main():
-    parser = argparse.ArgumentParser(
-        description=""
-    )
+    pass
 
 if __name__ == "__main__":
     main()

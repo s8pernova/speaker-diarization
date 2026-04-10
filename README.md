@@ -4,8 +4,6 @@ Batch tool that takes meeting recordings, runs speaker diarization with pyannote
 
 This project does **not** try to identify real names. It only answers **who spoke when**, groups those chunks by generic speaker label, and leaves the human naming step for later.
 
-## What this tool does
-
 Given one or more files like:
 
 - `.mp4`
@@ -13,7 +11,7 @@ Given one or more files like:
 - `.wav`
 - `.m4a`
 
-the tool will:
+the program will:
 
 1. extract audio from each input file
 2. upload that audio to pyannoteAI
